@@ -1,0 +1,3 @@
+# Preview: remove these restrictions when the production domain and email are configured.
+User-agent: *
+Disallow: /
