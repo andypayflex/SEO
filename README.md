@@ -20,6 +20,29 @@ npm run build
 
 The complete deployable site is copied to `dist/`. Serve the build locally with `npm run preview` (stop the development server first, or choose another port). Upload the contents of `dist/` to a static website host. The included Node server is for local preview; it is not needed on a static host.
 
+## Deploy on Vercel
+
+The root `vercel.json` configures this project as a static site:
+
+| Setting | Value |
+| --- | --- |
+| Framework preset | Other |
+| Root directory | Repository root (`.`) |
+| Build command | `npm run build` |
+| Output directory | `dist` |
+| Production branch | `main` |
+| Environment variables | None required for the current website |
+
+After connecting the GitHub repository to Vercel, pushes to the production branch normally trigger a deployment. The configuration file overrides the framework, build command, and output directory settings. Keep the project root set to the repository root in the Vercel dashboard.
+
+Vercel serves the generated HTML, CSS, JavaScript, and SVG files directly. `server.mjs` is only the local preview server and does not run on Vercel. No database or server process is required.
+
+The enquiry form still prepares an email draft in the visitor’s email app. Automatic email submission would require a separate form service or server-side email integration.
+
+The dummy contact email and search-indexing restrictions remain in place for the initial deployment. Follow the launch steps below before advertising the site. A custom domain can be connected in Vercel once it has been chosen.
+
+Reference: https://vercel.com/docs/project-configuration/vercel-json
+
 ## Update the contact email
 
 Edit `email` in `site-config.js`. It is currently `hello@bytesofcontent.example`, a reserved dummy address that cannot receive email, as requested. The visible email link, enquiry destination, and placeholder notices update from this setting. Also update the fallback email links in `index.html` so they remain useful if JavaScript is disabled.
