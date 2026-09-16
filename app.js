@@ -2,6 +2,8 @@ const config = window.SITE_CONFIG;
 const nav = document.querySelector('#main-nav');
 const menuToggle = document.querySelector('.menu-toggle');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const header = document.querySelector('.site-header');
+document.body.classList.add('js-enabled');
 
 function closeMenu() {
   nav.classList.remove('is-open');
@@ -25,7 +27,40 @@ document.addEventListener('keydown', event => {
 document.addEventListener('click', event => {
   if (!event.target.closest('.site-header')) closeMenu();
 });
-window.matchMedia('(min-width: 641px)').addEventListener('change', closeMenu);
+window.matchMedia('(min-width: 901px)').addEventListener('change', closeMenu);
+
+function updateHeader() {
+  header.classList.toggle('is-scrolled', window.scrollY > 16);
+}
+updateHeader();
+
+// Keep the current section visible in both the visual and accessible navigation.
+const sectionLinks = [...nav.querySelectorAll('a[href^="#"]')]
+  .map(link => ({ link, section: document.querySelector(link.getAttribute('href')) }))
+  .filter(item => item.section);
+
+function updateActiveSection() {
+  const current = sectionLinks.filter(({ section }) => section.getBoundingClientRect().top <= 160).at(-1);
+  sectionLinks.forEach(({ link }) => {
+    const isActive = link === current?.link;
+    link.classList.toggle('is-active', isActive);
+    if (isActive) link.setAttribute('aria-current', 'location');
+    else link.removeAttribute('aria-current');
+  });
+}
+let scrollUpdatePending = false;
+function scheduleScrollUpdate() {
+  if (scrollUpdatePending) return;
+  scrollUpdatePending = true;
+  requestAnimationFrame(() => {
+    updateHeader();
+    updateActiveSection();
+    scrollUpdatePending = false;
+  });
+}
+window.addEventListener('scroll', scheduleScrollUpdate, { passive: true });
+window.addEventListener('resize', scheduleScrollUpdate, { passive: true });
+updateActiveSection();
 
 document.querySelector('#year').textContent = String(new Date().getFullYear());
 document.querySelectorAll('[data-email-link]').forEach(link => {
@@ -36,8 +71,17 @@ const isPlaceholder = config.email.toLowerCase().endsWith('.example');
 document.querySelector('#placeholder-note').hidden = !isPlaceholder;
 document.querySelector('#draft-warning').hidden = !isPlaceholder;
 
+function openDialog(dialog) {
+  closeMenu();
+  dialog.showModal();
+  document.body.classList.add('has-open-dialog');
+}
+
 document.querySelectorAll('dialog').forEach(dialog => {
   dialog.querySelector('.modal-close').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('close', () => {
+    if (!document.querySelector('dialog[open]')) document.body.classList.remove('has-open-dialog');
+  });
   dialog.addEventListener('click', event => {
     const bounds = dialog.getBoundingClientRect();
     if (event.target === dialog && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)) dialog.close();
@@ -63,10 +107,12 @@ const services = {
 };
 const serviceDialog = document.querySelector('#service-dialog');
 serviceDialog.setAttribute('aria-labelledby', 'service-dialog-title');
+serviceDialog.setAttribute('aria-describedby', 'service-dialog-description');
 let selectedService;
 document.querySelectorAll('[data-service]').forEach(button => {
   button.addEventListener('click', () => {
     selectedService = services[button.dataset.service];
+    if (!selectedService) return;
     document.querySelector('#service-eyebrow').textContent = selectedService.eyebrow;
     document.querySelector('#service-dialog-title').textContent = selectedService.label;
     document.querySelector('#service-dialog-description').textContent = selectedService.description;
@@ -75,7 +121,7 @@ document.querySelectorAll('[data-service]').forEach(button => {
       li.textContent = text;
       return li;
     }));
-    serviceDialog.showModal();
+    openDialog(serviceDialog);
   });
 });
 document.querySelector('#service-enquire').addEventListener('click', () => {
@@ -112,7 +158,7 @@ form.addEventListener('submit', event => {
   document.querySelector('#send-draft').href = `mailto:${config.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   copyStatus.textContent = '';
   document.querySelector('#copy-draft').textContent = 'Copy text';
-  enquiryDialog.showModal();
+  openDialog(enquiryDialog);
 });
 form.querySelectorAll('input, textarea').forEach(input => input.addEventListener('input', () => input.setCustomValidity('')));
 // Enable only after the local draft handler is installed. With JavaScript off,
@@ -129,4 +175,4 @@ document.querySelector('#copy-draft').addEventListener('click', async () => {
     copyStatus.textContent = 'Select and copy the draft above using your device’s copy command.';
   }
 });
-document.querySelector('#privacy-button').addEventListener('click', () => document.querySelector('#privacy-dialog').showModal());
+document.querySelector('#privacy-button').addEventListener('click', () => openDialog(document.querySelector('#privacy-dialog')));

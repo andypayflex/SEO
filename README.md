@@ -53,11 +53,13 @@ The form validates the visitor’s details and prepares a preview of their enqui
 
 - `index.html`: page copy, section structure, expertise sections, metadata, and organisation structured data.
 - `styles.css`: colour tokens, layouts, original CSS/SVG illustration, and responsive styles.
-- `app.js`: service detail dialogs, service preselection, mobile navigation, email-draft preparation, clipboard handling, and privacy dialog.
+- `app.js`: service detail dialogs, service preselection, responsive navigation, active section tracking, email-draft preparation, clipboard handling, and privacy dialog.
 - `site-config.js`: contact email.
 - `public/favicon.svg`: original code-bracket brand mark.
 
-Expertise cards use custom typography and code symbols to represent professional disciplines. All artwork is drawn in CSS and SVG, and typography uses local system fonts.
+The visual identity combines electric blue, warm ivory, lime, and oversized Manrope typography. Original CSS/SVG artwork connects search, code, and content without stock images or external asset requests. The variable Manrope font is self-hosted in `public/fonts/` (about 25 KB), with its SIL Open Font License alongside it. Georgia and system sans-serif fonts provide fallbacks.
+
+The layout adapts from narrow phones to wide desktops. Navigation highlights the current section and becomes a collapsible, scrollable menu on mobile; without JavaScript the navigation links stay available. Service dialogs support keyboard dismissal and return focus, and the enquiry form still prepares a local email draft for review. Reduced-motion preferences, visible focus styles, labelled fields, and native FAQ disclosures are included.
 
 ## Before publishing
 
